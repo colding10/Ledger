@@ -56,6 +56,7 @@ def main(cons: Console):
             )
         elif inp == "2":
             print_entries(database, cons)
+        inp = input("1: Add an entry, 2: check balance Q: quit ").upper()
 
 
 if __name__ == "__main__":
