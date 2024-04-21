@@ -1,9 +1,7 @@
-import argparse
-
 from database import CSVDatabase, CSVEntry
 from rich.console import Console
-from rich.table import Table
 from rich.prompt import Prompt
+from rich.table import Table
 
 VERSION = "0.11"
 PROGRAM = "Ledger"
@@ -16,44 +14,7 @@ def parse_event(text: str) -> CSVEntry:
     return CSVEntry(date, change, reason)
 
 
-def parse_args() -> argparse.Namespace:
-    """Parses command-line arguments, ending if incomplete arguments. Returns a `argparse.Namespace.`"""
-    parser = argparse.ArgumentParser(
-        prog=f"python3 cli.py",
-        description="Manager a ledger using a database file.",
-        epilog=f"© {PROGRAM} v{VERSION} Colin Ding 2022",
-        prefix_chars="-",
-    )
-
-    parser.add_argument(
-        "File",
-        metavar="file",
-        type=str,
-        help="filename to the database containing entries",
-    )
-
-    parser.add_argument(
-        "-e",
-        "--event",
-        type=parse_event,
-        help="add an event in format 'MDY CHANGE REASON'",
-    )
-
-    parser.add_argument(
-        "-l",
-        "--list",
-        dest="output_list",
-        action="store_true",
-        help="output a list of all entries",
-    )
-    parser.add_argument("-c", "--clear", action="store_true", help="clear the database")
-
-    args = parser.parse_args()
-
-    return args
-
-
-def print_entries(database: CSVDatabase, console: Console):
+def print_entries(database: CSVDatabase, cons: Console):
     database.update()
     database.apply_interest()
 
@@ -72,33 +33,32 @@ def print_entries(database: CSVDatabase, console: Console):
             entry.date.strftime("%m-%d-%Y"), entry.change, entry._total, entry.reason
         )
 
-    console.print(table)
+    cons.print(table)
 
 
-def main(args: argparse.Namespace, console: Console):
+def main(cons: Console):
     database = CSVDatabase()
 
-    database.connect(args.File)
+    database.connect(input("Enter database file name: "))
+    print_entries(database, cons)
 
-    if args.output_list:
-        print_entries(database, console)
-
-    elif args.event:
-        database.add_entries([args.event])
-
-    elif args.clear:
-        name = Prompt.ask(
-            "[bold red] Do you really want to clear the database? (ALL ENTRIES WILL BE LOST) [bold red]",
-            choices=["y", "n"],
-            default="n",
-        )
-
-        if "y" in name.lower():
-            database.clear()
+    inp = input("1: Add an entry, 2: check balance Q: quit ").upper()
+    while inp != "Q":
+        if inp == "1":
+            database.add_entries(
+                [
+                    CSVEntry(
+                        input("Date in m/d/y "),
+                        input("Change in value "),
+                        input("Reason "),
+                    )
+                ]
+            )
+        elif inp == "2":
+            print_entries(database, cons)
 
 
 if __name__ == "__main__":
     console = Console()
 
-    args = parse_args()
-    main(args, console)
+    main(console)
