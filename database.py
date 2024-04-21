@@ -1,9 +1,9 @@
-import os
 import datetime
-from dateutil import rrule
+import os
 from io import TextIOWrapper
 
 import pandas
+from dateutil import rrule
 
 INTREST_PERCENTAGE = 0.01
 
@@ -229,8 +229,8 @@ class CSVDatabase:
         last_date = (last_date.replace(day=1) - datetime.timedelta(days=32)).replace(
             day=1
         )
-        last_date = (datetime.date.today().replace(day=1))
-        
+        last_date = datetime.date.today().replace(day=1)
+
         for dt in rrule.rrule(rrule.MONTHLY, dtstart=first_date, until=last_date):
             existing = [e for e in self.get_entries() if e.date == dt]
             if existing:
